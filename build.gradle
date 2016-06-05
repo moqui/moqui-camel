@@ -1,0 +1,73 @@
+/*
+ * This software is in the public domain under CC0 1.0 Universal plus a 
+ * Grant of Patent License.
+ * 
+ * To the extent possible under law, the author(s) have dedicated all
+ * copyright and related and neighboring rights to this software to the
+ * public domain worldwide. This software is distributed without any
+ * warranty.
+ * 
+ * You should have received a copy of the CC0 Public Domain Dedication
+ * along with this software (see the LICENSE.md file). If not, see
+ * <http://creativecommons.org/publicdomain/zero/1.0/>.
+ */
+
+apply plugin: 'groovy'
+
+version = '1.0.0'
+sourceCompatibility = '1.7'
+def moquiDir = projectDir.parentFile.parentFile.parentFile
+def frameworkDir = file(moquiDir.absolutePath + '/framework')
+
+// to run use "gradle dependencyUpdates"
+apply plugin: 'com.github.ben-manes.versions'
+buildscript {
+  repositories { jcenter() }
+  dependencies { classpath 'com.github.ben-manes:gradle-versions-plugin:0.12.0' }
+}
+repositories {
+    flatDir name: 'localLib', dirs: frameworkDir.absolutePath + '/lib'
+    jcenter()
+}
+
+dependencies {
+    compile project(':framework')
+
+    // Apache Camel
+    compile 'org.apache.camel:camel-core:2.17.1' // Apache 2.0
+    runtime 'org.apache.camel:camel-csv:2.17.1' // Apache 2.0
+    runtime 'org.apache.camel:camel-freemarker:2.17.1' // Apache 2.0
+    runtime 'org.apache.camel:camel-groovy:2.17.1' // Apache 2.0
+    /* Uncomment these as desired for use in Camel:
+    // http-common, camel-http4: depends on org.apache.geronimo.specs:geronimo-servlet_3.0_spec:1.0, must be required
+    //     so can't remove and conflicts with the Servlet 2.5 jar which Moqui currently uses, (Winstone relies on this)
+    runtime ('org.apache.camel:camel-http-common:2.17.1') { exclude group: 'org.apache.geronimo.specs' } // Apache 2.0
+    runtime 'org.apache.camel:camel-http4:2.17.1' // Apache 2.0
+    runtime 'org.apache.camel:camel-jms:2.17.1' // Apache 2.0
+    runtime 'org.apache.camel:camel-lucene:2.17.1' // Apache 2.0
+    runtime 'org.apache.camel:camel-lucene:2.17.1' // Apache 2.0
+    runtime 'org.apache.camel:camel-mail:2.17.1' // Apache 2.0
+    runtime 'org.apache.camel:camel-mqtt:2.17.1' // Apache 2.0
+    runtime 'org.apache.camel:camel-quartz2:2.17.1' // Apache 2.0
+    runtime 'org.apache.camel:camel-shiro:2.17.1' // Apache 2.0
+    runtime 'org.apache.camel:camel-xmlrpc:2.17.1' // Apache 2.0
+    */
+}
+
+// by default the Java plugin runs test on build, change to not do that (only run test if explicit task)
+check.dependsOn.remove(test)
+task cleanLib(type: Delete) { delete fileTree(dir: projectDir.absolutePath+'/lib', include: '*') }
+clean.dependsOn cleanLib
+
+jar {
+    destinationDir = file(projectDir.absolutePath + '/lib')
+    // this is required to change from the default that includes the path to this module (ie 'runtime/component/moqui-camel')
+    baseName = 'moqui-camel'
+}
+
+task copyDependencies << {
+    copy { from (configurations.compile - project(':framework').configurations.runtime - project(':framework').jar.archivePath)
+        into file(projectDir.absolutePath + '/lib') }
+}
+copyDependencies.dependsOn cleanLib
+jar.dependsOn copyDependencies
