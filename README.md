@@ -3,7 +3,7 @@
 [![license](http://img.shields.io/badge/license-CC0%201.0%20Universal-blue.svg)](https://github.com/moqui/moqui-camel/blob/master/LICENSE.md)
 [![release](http://img.shields.io/github/release/moqui/moqui-camel.svg)](https://github.com/moqui/moqui-camel/releases)
 
-Moqui Framework tool component for OrientDB, a datasource plugin for the Entity Facade.
+Moqui Framework tool component for Apache Camel, an enterprise integration pattern (EIP) suite, along with an endpoint for the Service Facade.
 
 To install run (with moqui-framework):
 
