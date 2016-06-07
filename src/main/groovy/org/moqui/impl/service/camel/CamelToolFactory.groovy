@@ -54,7 +54,7 @@ class CamelToolFactory implements ToolFactory<CamelContext> {
     }
 
     @Override
-    CamelContext getInstance() { return camelContext }
+    CamelContext getInstance(Object... parameters) { return camelContext }
 
     @Override
     void destroy() {
