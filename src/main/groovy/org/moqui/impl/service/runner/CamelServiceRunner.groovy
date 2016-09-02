@@ -13,6 +13,7 @@
  */
 package org.moqui.impl.service.runner
 
+import groovy.transform.CompileStatic
 import org.apache.camel.CamelContext
 import org.apache.camel.CamelExecutionException
 import org.apache.camel.Endpoint
@@ -28,6 +29,7 @@ import org.moqui.impl.service.camel.MoquiServiceConsumer
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
+@CompileStatic
 public class CamelServiceRunner implements ServiceRunner {
     protected final static Logger logger = LoggerFactory.getLogger(CamelServiceRunner.class)
 
@@ -53,7 +55,7 @@ public class CamelServiceRunner implements ServiceRunner {
     public Map<String, Object> runService(ServiceDefinition sd, Map<String, Object> parameters) {
         if (camelToolFactory == null) throw new IllegalStateException("CamelServiceRunner disabled, probably because Camel was not initialized")
         // location is mandatory, method is optional and only really used to call other Moqui services (goes in the ServiceName header)
-        String endpointUri = sd.getLocation()
+        String endpointUri = sd.location
         if (!endpointUri) throw new ServiceException("Service [${sd.serviceName}] is missing the location attribute and it is required for running a Camel service.")
 
         Map<String, Object> headers = new HashMap<String, Object>()

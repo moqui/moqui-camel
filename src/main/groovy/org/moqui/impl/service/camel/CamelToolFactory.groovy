@@ -26,7 +26,7 @@ import org.slf4j.LoggerFactory
 @CompileStatic
 class CamelToolFactory implements ToolFactory<CamelContext> {
     protected final static Logger logger = LoggerFactory.getLogger(CamelToolFactory.class)
-    final static TOOL_NAME = "Camel"
+    final static String TOOL_NAME = "Camel"
 
     protected ExecutionContextFactory ecf = null
     /** The central object of the Camel API: CamelContext */
