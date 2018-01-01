@@ -24,7 +24,7 @@ def frameworkDir = file(moquiDir.absolutePath + '/framework')
 apply plugin: 'com.github.ben-manes.versions'
 buildscript {
   repositories { jcenter() }
-  dependencies { classpath 'com.github.ben-manes:gradle-versions-plugin:0.15.0' }
+  dependencies { classpath 'com.github.ben-manes:gradle-versions-plugin:0.17.0' }
 }
 repositories {
     flatDir name: 'localLib', dirs: frameworkDir.absolutePath + '/lib'
@@ -35,22 +35,22 @@ dependencies {
     compile project(':framework')
 
     // Apache Camel
-    compile 'org.apache.camel:camel-core:2.19.3' // Apache 2.0
-    runtime 'org.apache.camel:camel-csv:2.19.3' // Apache 2.0
-    runtime 'org.apache.camel:camel-freemarker:2.19.3' // Apache 2.0
+    compile 'org.apache.camel:camel-core:2.20.1' // Apache 2.0
+    runtime 'org.apache.camel:camel-csv:2.20.1' // Apache 2.0
+    runtime 'org.apache.camel:camel-freemarker:2.20.1' // Apache 2.0
     // module for camel-groovy because depends on groovy-all and moqui-framework now using selected groovy modules
-    runtime module('org.apache.camel:camel-groovy:2.19.3') // Apache 2.0
+    runtime module('org.apache.camel:camel-groovy:2.20.1') // Apache 2.0
     /* Uncomment these as desired for use in Camel:
-    runtime ('org.apache.camel:camel-http-common:2.19.3') { exclude group: 'org.apache.geronimo.specs' } // Apache 2.0
-    runtime 'org.apache.camel:camel-http4:2.19.3' // Apache 2.0
-    runtime 'org.apache.camel:camel-jms:2.19.3' // Apache 2.0
-    runtime 'org.apache.camel:camel-lucene:2.19.3' // Apache 2.0
-    runtime 'org.apache.camel:camel-lucene:2.19.3' // Apache 2.0
-    runtime 'org.apache.camel:camel-mail:2.19.3' // Apache 2.0
-    runtime 'org.apache.camel:camel-mqtt:2.19.3' // Apache 2.0
-    runtime 'org.apache.camel:camel-quartz2:2.19.3' // Apache 2.0
-    runtime 'org.apache.camel:camel-shiro:2.19.3' // Apache 2.0
-    runtime 'org.apache.camel:camel-xmlrpc:2.19.3' // Apache 2.0
+    runtime ('org.apache.camel:camel-http-common:2.20.1') { exclude group: 'org.apache.geronimo.specs' } // Apache 2.0
+    runtime 'org.apache.camel:camel-http4:2.20.1' // Apache 2.0
+    runtime 'org.apache.camel:camel-jms:2.20.1' // Apache 2.0
+    runtime 'org.apache.camel:camel-lucene:2.20.1' // Apache 2.0
+    runtime 'org.apache.camel:camel-lucene:2.20.1' // Apache 2.0
+    runtime 'org.apache.camel:camel-mail:2.20.1' // Apache 2.0
+    runtime 'org.apache.camel:camel-mqtt:2.20.1' // Apache 2.0
+    runtime 'org.apache.camel:camel-quartz2:2.20.1' // Apache 2.0
+    runtime 'org.apache.camel:camel-shiro:2.20.1' // Apache 2.0
+    runtime 'org.apache.camel:camel-xmlrpc:2.20.1' // Apache 2.0
     */
 }
 
