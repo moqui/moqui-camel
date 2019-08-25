@@ -16,6 +16,9 @@ package org.moqui.impl.service.camel
 import groovy.transform.CompileStatic
 import org.apache.camel.CamelContext
 import org.apache.camel.impl.DefaultCamelContext
+import org.apache.camel.builder.RouteBuilder
+import org.apache.camel.impl.DefaultPackageScanClassResolver
+import org.apache.camel.spi.PackageScanClassResolver
 import org.moqui.context.ExecutionContextFactory
 import org.moqui.context.ToolFactory
 import org.slf4j.Logger
@@ -44,6 +47,7 @@ class CamelToolFactory implements ToolFactory<CamelContext> {
         logger.info("Starting Camel")
         moquiServiceComponent = new MoquiServiceComponent(this)
         camelContext.addComponent("moquiservice", moquiServiceComponent)
+        if(System.getProperty("org.moqui.camel.routes.package"))loadRoutes()
         camelContext.start()
     }
     @Override
@@ -69,4 +73,45 @@ class CamelToolFactory implements ToolFactory<CamelContext> {
     MoquiServiceComponent getMoquiServiceComponent() { return moquiServiceComponent }
     void registerCamelConsumer(String uri, MoquiServiceConsumer consumer) { camelConsumerByUriMap.put(uri, consumer) }
     MoquiServiceConsumer getCamelConsumer(String uri) { return camelConsumerByUriMap.get(uri) }
+
+
+    /**
+     * Auto load camel routes
+     */
+    private void loadRoutes(){
+        logger.info("Loading routes...")
+        PackageScanClassResolver packageResolver = new DefaultPackageScanClassResolver()
+        Set<Class<?>> routesClassesSet = packageResolver.findImplementations(RouteBuilder.class, "org.moqui.camel.routes");
+        routesClassesSet.each{key ->
+            RouteBuilder routeBuilder = createRoutes(key.getName());
+            addRoutesToContext(routeBuilder);
+        }
+    }
+
+    /**
+     * Loads {@code routeBuilderCls} to add into CamelContext
+     * @param routeBuilderCls
+     * @return
+     */
+    private RouteBuilder createRoutes(String routeBuilderCls) {
+        ClassLoader loader = Thread.currentThread().getContextClassLoader();
+        try {
+            Class<?> c = loader.loadClass(routeBuilderCls);
+            return (RouteBuilder) c.newInstance();
+        } catch (Exception e) {
+            logger.error("Error in loading routeBuilderCls "+routeBuilderCls, e)
+        }
+    }
+
+    /**
+     * Adds {@code routeBuilder} to the CamelContext
+     * @param routeBuilder
+     */
+    private void addRoutesToContext(RouteBuilder routeBuilder) {
+        try {
+            camelContext.addRoutes(routeBuilder);
+        } catch (Exception e) {
+            logger.error("Cannot add routes to : " + routeBuilder, e);
+        }
+    }
 }
