@@ -81,7 +81,7 @@ class CamelToolFactory implements ToolFactory<CamelContext> {
     private void loadRoutes(){
         logger.info("Loading routes...")
         PackageScanClassResolver packageResolver = new DefaultPackageScanClassResolver()
-        Set<Class<?>> routesClassesSet = packageResolver.findImplementations(RouteBuilder.class, "org.moqui.camel.routes");
+        Set<Class<?>> routesClassesSet = packageResolver.findImplementations(RouteBuilder.class, System.getProperty("org.moqui.camel.routes.package"));
         routesClassesSet.each{key ->
             RouteBuilder routeBuilder = createRoutes(key.getName());
             addRoutesToContext(routeBuilder);
