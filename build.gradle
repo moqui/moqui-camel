@@ -24,7 +24,7 @@ def frameworkDir = file(moquiDir.absolutePath + '/framework')
 apply plugin: 'com.github.ben-manes.versions'
 buildscript {
   repositories { jcenter() }
-  dependencies { classpath 'com.github.ben-manes:gradle-versions-plugin:0.21.0' }
+  dependencies { classpath 'com.github.ben-manes:gradle-versions-plugin:0.27.0' }
 }
 dependencyUpdates.resolutionStrategy = { componentSelection { rules -> rules.all { ComponentSelection selection ->
     boolean rejected = ['alpha', 'beta', 'rc', 'cr', 'm', 'b'].any { qualifier -> selection.candidate.version ==~ /(?i).*[.-]${qualifier}[.\d-].*/ }
@@ -44,6 +44,8 @@ dependencies {
 
     // Apache Camel
     // NOTE: there is a classloading issue with Camel 2.24.0 with the default Caffeine cache so not updating for now
+    // "Caused by: java.lang.ClassNotFoundException: Class org.apache.camel.com.github.benmanes.caffeine.cache.SSLMS not found."
+    // NOTE: updating to Camel 3 will require various code changes...
     compile 'org.apache.camel:camel-core:2.22.5' // Apache 2.0
     runtime 'org.apache.camel:camel-csv:2.22.5' // Apache 2.0
     runtime 'org.apache.camel:camel-freemarker:2.22.5' // Apache 2.0
