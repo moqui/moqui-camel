@@ -14,8 +14,8 @@
 
 apply plugin: 'groovy'
 
-sourceCompatibility = '1.8'
-version = '1.0.0'
+def componentNode = parseComponent(project)
+version = componentNode.'@version'
 def jarBaseName = 'moqui-camel'
 def moquiDir = projectDir.parentFile.parentFile.parentFile
 def frameworkDir = file(moquiDir.absolutePath + '/framework')
@@ -23,8 +23,11 @@ def frameworkDir = file(moquiDir.absolutePath + '/framework')
 // to run use "gradle dependencyUpdates"
 apply plugin: 'com.github.ben-manes.versions'
 buildscript {
-  repositories { jcenter() }
-  dependencies { classpath 'com.github.ben-manes:gradle-versions-plugin:0.27.0' }
+    repositories {
+        mavenCentral()
+        maven { url "https://plugins.gradle.org/m2/" }
+    }
+  dependencies { classpath 'com.github.ben-manes:gradle-versions-plugin:0.42.0' }
 }
 dependencyUpdates.resolutionStrategy = { componentSelection { rules -> rules.all { ComponentSelection selection ->
     boolean rejected = ['alpha', 'beta', 'rc', 'cr', 'm', 'b'].any { qualifier -> selection.candidate.version ==~ /(?i).*[.-]${qualifier}[.\d-].*/ }
@@ -32,7 +35,7 @@ dependencyUpdates.resolutionStrategy = { componentSelection { rules -> rules.all
 } } }
 repositories {
     flatDir name: 'localLib', dirs: frameworkDir.absolutePath + '/lib'
-    jcenter()
+    mavenCentral()
 }
 
 // Log4J has annotation processors, disable to avoid warning
@@ -40,29 +43,29 @@ tasks.withType(JavaCompile) { options.compilerArgs << "-proc:none" }
 tasks.withType(GroovyCompile) { options.compilerArgs << "-proc:none" }
 
 dependencies {
-    compile project(':framework')
-    testCompile project(':framework').configurations.testCompile.allDependencies
+    implementation project(':framework')
+    testImplementation project(':framework').configurations.testImplementation.allDependencies
 
     // Apache Camel
     // NOTE: there is a classloading issue with Camel 2.24.0 with the default Caffeine cache so not updating for now
     // "Caused by: java.lang.ClassNotFoundException: Class org.apache.camel.com.github.benmanes.caffeine.cache.SSLMS not found."
     // NOTE: updating to Camel 3 will require various code changes...
-    compile 'org.apache.camel:camel-core:2.22.5' // Apache 2.0
-    runtime 'org.apache.camel:camel-csv:2.22.5' // Apache 2.0
-    runtime 'org.apache.camel:camel-freemarker:2.22.5' // Apache 2.0
+    implementation 'org.apache.camel:camel-core:2.22.5' // Apache 2.0
+    runtimeOnly 'org.apache.camel:camel-csv:2.22.5' // Apache 2.0
+    runtimeOnly 'org.apache.camel:camel-freemarker:2.22.5' // Apache 2.0
     // module for camel-groovy because depends on groovy-all and moqui-framework now using selected groovy modules
-    runtime module('org.apache.camel:camel-groovy:2.22.5') // Apache 2.0
+    runtimeOnly module('org.apache.camel:camel-groovy:2.22.5') // Apache 2.0
     /* Uncomment these as desired for use in Camel:
-    runtime ('org.apache.camel:camel-http-common:2.22.5') { exclude group: 'org.apache.geronimo.specs' } // Apache 2.0
-    runtime 'org.apache.camel:camel-http4:2.22.5' // Apache 2.0
-    runtime 'org.apache.camel:camel-jms:2.22.5' // Apache 2.0
-    runtime 'org.apache.camel:camel-lucene:2.22.5' // Apache 2.0
-    runtime 'org.apache.camel:camel-lucene:2.22.5' // Apache 2.0
-    runtime 'org.apache.camel:camel-mail:2.22.5' // Apache 2.0
-    runtime 'org.apache.camel:camel-mqtt:2.22.5' // Apache 2.0
-    runtime 'org.apache.camel:camel-quartz2:2.22.5' // Apache 2.0
-    runtime 'org.apache.camel:camel-shiro:2.22.5' // Apache 2.0
-    runtime 'org.apache.camel:camel-xmlrpc:2.22.5' // Apache 2.0
+    runtimeOnly ('org.apache.camel:camel-http-common:2.22.5') { exclude group: 'org.apache.geronimo.specs' } // Apache 2.0
+    runtimeOnly 'org.apache.camel:camel-http4:2.22.5' // Apache 2.0
+    runtimeOnly 'org.apache.camel:camel-jms:2.22.5' // Apache 2.0
+    runtimeOnly 'org.apache.camel:camel-lucene:2.22.5' // Apache 2.0
+    runtimeOnly 'org.apache.camel:camel-lucene:2.22.5' // Apache 2.0
+    runtimeOnly 'org.apache.camel:camel-mail:2.22.5' // Apache 2.0
+    runtimeOnly 'org.apache.camel:camel-mqtt:2.22.5' // Apache 2.0
+    runtimeOnly 'org.apache.camel:camel-quartz2:2.22.5' // Apache 2.0
+    runtimeOnly 'org.apache.camel:camel-shiro:2.22.5' // Apache 2.0
+    runtimeOnly 'org.apache.camel:camel-xmlrpc:2.22.5' // Apache 2.0
     */
 }
 
@@ -78,7 +81,7 @@ jar {
     archiveBaseName = jarBaseName
 }
 task copyDependencies { doLast {
-    copy { from (configurations.runtime - project(':framework').configurations.runtime - project(':framework').jar.archivePath)
+    copy { from (configurations.runtimeClasspath - project(':framework').configurations.runtimeClasspath - project(':framework').jar.archivePath)
         into file(projectDir.absolutePath + '/lib') }
 } }
 copyDependencies.dependsOn cleanLib
