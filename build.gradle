@@ -25,7 +25,7 @@ apply plugin: 'com.github.ben-manes.versions'
 buildscript {
     repositories {
         mavenCentral()
-        maven { url "https://plugins.gradle.org/m2/" }
+        maven { url = "https://plugins.gradle.org/m2/" }
     }
   dependencies { classpath 'com.github.ben-manes:gradle-versions-plugin:0.42.0' }
 }
@@ -54,7 +54,9 @@ dependencies {
     runtimeOnly 'org.apache.camel:camel-csv:2.22.5' // Apache 2.0
     runtimeOnly 'org.apache.camel:camel-freemarker:2.22.5' // Apache 2.0
     // module for camel-groovy because depends on groovy-all and moqui-framework now using selected groovy modules
-    runtimeOnly module('org.apache.camel:camel-groovy:2.22.5') // Apache 2.0
+    runtimeOnly('org.apache.camel:camel-groovy:2.22.5') {
+        transitive = false
+    } // Apache 2.0
     /* Uncomment these as desired for use in Camel:
     runtimeOnly ('org.apache.camel:camel-http-common:2.22.5') { exclude group: 'org.apache.geronimo.specs' } // Apache 2.0
     runtimeOnly 'org.apache.camel:camel-http4:2.22.5' // Apache 2.0
@@ -81,8 +83,12 @@ jar {
     archiveBaseName = jarBaseName
 }
 task copyDependencies { doLast {
-    copy { from (configurations.runtimeClasspath - project(':framework').configurations.runtimeClasspath - project(':framework').jar.archivePath)
-        into file(projectDir.absolutePath + '/lib') }
+    copy {
+        from (configurations.runtimeClasspath -
+              project(':framework').configurations.runtimeClasspath -
+              project(':framework').tasks.jar.archiveFile.get().asFile)
+        into file(projectDir.absolutePath + '/lib')
+    }
 } }
 copyDependencies.dependsOn cleanLib
 jar.dependsOn copyDependencies
