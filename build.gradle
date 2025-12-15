@@ -37,11 +37,11 @@ dependencies {
     // NOTE: there is a classloading issue with Camel 2.24.0 with the default Caffeine cache so not updating for now
     // "Caused by: java.lang.ClassNotFoundException: Class org.apache.camel.com.github.benmanes.caffeine.cache.SSLMS not found."
     // NOTE: updating to Camel 3 will require various code changes...
-    implementation 'org.apache.camel:camel-core:2.22.5' // Apache 2.0
-    runtimeOnly 'org.apache.camel:camel-csv:2.22.5' // Apache 2.0
-    runtimeOnly 'org.apache.camel:camel-freemarker:2.22.5' // Apache 2.0
+    implementation 'org.apache.camel:camel-core:4.16.0' // Apache 2.0
+    runtimeOnly 'org.apache.camel:camel-csv:4.16.0' // Apache 2.0
+    runtimeOnly 'org.apache.camel:camel-freemarker:4.16.0' // Apache 2.0
     // module for camel-groovy because depends on groovy-all and moqui-framework now using selected groovy modules
-    runtimeOnly('org.apache.camel:camel-groovy:2.22.5') {
+    runtimeOnly('org.apache.camel:camel-groovy:4.16.0') {
         transitive = false
     } // Apache 2.0
     /* Uncomment these as desired for use in Camel:
