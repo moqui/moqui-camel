@@ -14,7 +14,7 @@
 package org.moqui.impl.service.camel
 
 import org.apache.camel.Endpoint
-import org.apache.camel.impl.DefaultComponent
+import org.apache.camel.support.*
 
 class MoquiServiceComponent extends DefaultComponent {
 

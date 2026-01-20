@@ -27,7 +27,7 @@ buildscript {
         mavenCentral()
         maven { url "https://plugins.gradle.org/m2/" }
     }
-  dependencies { classpath 'com.github.ben-manes:gradle-versions-plugin:0.42.0' }
+  dependencies { classpath 'com.github.ben-manes:gradle-versions-plugin:0.51.0' }
 }
 dependencyUpdates.resolutionStrategy = { componentSelection { rules -> rules.all { ComponentSelection selection ->
     boolean rejected = ['alpha', 'beta', 'rc', 'cr', 'm', 'b'].any { qualifier -> selection.candidate.version ==~ /(?i).*[.-]${qualifier}[.\d-].*/ }
@@ -50,15 +50,15 @@ dependencies {
     // NOTE: there is a classloading issue with Camel 2.24.0 with the default Caffeine cache so not updating for now
     // "Caused by: java.lang.ClassNotFoundException: Class org.apache.camel.com.github.benmanes.caffeine.cache.SSLMS not found."
     // NOTE: updating to Camel 3 will require various code changes...
-    implementation 'org.apache.camel:camel-core:2.22.5' // Apache 2.0
-    runtimeOnly 'org.apache.camel:camel-csv:2.22.5' // Apache 2.0
-    runtimeOnly 'org.apache.camel:camel-freemarker:2.22.5' // Apache 2.0
+    implementation 'org.apache.camel:camel-core:4.8.0' // Apache 2.0
+    runtimeOnly 'org.apache.camel:camel-csv:4.8.0' // Apache 2.0
+    //runtimeOnly 'org.apache.camel:camel-freemarker:4.8.8' // Apache 2.0
     // module for camel-groovy because depends on groovy-all and moqui-framework now using selected groovy modules
-    runtimeOnly module('org.apache.camel:camel-groovy:2.22.5') // Apache 2.0
-    /* Uncomment these as desired for use in Camel:
-    runtimeOnly ('org.apache.camel:camel-http-common:2.22.5') { exclude group: 'org.apache.geronimo.specs' } // Apache 2.0
-    runtimeOnly 'org.apache.camel:camel-http4:2.22.5' // Apache 2.0
-    runtimeOnly 'org.apache.camel:camel-jms:2.22.5' // Apache 2.0
+    runtimeOnly module('org.apache.camel:camel-groovy:4.8.0') // Apache 2.0
+    /* Uncomment these as desired for use in Camel: */
+    runtimeOnly ('org.apache.camel:camel-http-common:4.8.0') { exclude group: 'org.apache.geronimo.specs' } // Apache 2.0
+    runtimeOnly 'org.apache.camel:camel-http:4.8.0' // Apache 2.0
+ /*   runtimeOnly 'org.apache.camel:camel-jms:2.22.5' // Apache 2.0
     runtimeOnly 'org.apache.camel:camel-lucene:2.22.5' // Apache 2.0
     runtimeOnly 'org.apache.camel:camel-lucene:2.22.5' // Apache 2.0
     runtimeOnly 'org.apache.camel:camel-mail:2.22.5' // Apache 2.0

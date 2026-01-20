@@ -14,7 +14,7 @@
 package org.moqui.impl.service.camel
 
 import org.apache.camel.Exchange
-import org.apache.camel.impl.DefaultProducer
+import org.apache.camel.support.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 

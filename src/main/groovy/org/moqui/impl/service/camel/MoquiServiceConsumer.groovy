@@ -16,7 +16,7 @@ package org.moqui.impl.service.camel
 import org.apache.camel.Exchange
 import org.apache.camel.Processor
 import org.apache.camel.RuntimeCamelException
-import org.apache.camel.impl.DefaultConsumer
+import org.apache.camel.support.*
 import org.moqui.impl.service.ServiceDefinition
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
