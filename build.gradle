@@ -80,6 +80,7 @@ jar.dependsOn copyDependencies
 
 test {
     dependsOn cleanTest
+    useJUnitPlatform()
 
     systemProperty 'moqui.runtime', moquiDir.absolutePath + '/runtime'
     systemProperty 'moqui.conf', 'conf/MoquiDevConf.xml'
