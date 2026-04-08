@@ -29,19 +29,21 @@ class MoquiServiceProducer extends DefaultProducer {
     protected final MoquiServiceEndpoint moquiServiceEndpoint
     protected final String remaining
 
-
-    public MoquiServiceProducer(MoquiServiceEndpoint moquiServiceEndpoint, String remaining) {
+    MoquiServiceProducer(MoquiServiceEndpoint moquiServiceEndpoint, String remaining) {
         super(moquiServiceEndpoint)
         this.moquiServiceEndpoint = moquiServiceEndpoint
         this.remaining = remaining
     }
 
-    public void process(Exchange exchange) throws Exception {
-        String serviceName = exchange.getIn().getHeader("ServiceName", this.remaining, String.class)
+    @Override
+    void process(Exchange exchange) throws Exception {
+        String serviceName = exchange.getMessage().getHeader("ServiceName", this.remaining, String.class)
+        
         //if (serviceName == null) {
         //    throw new RuntimeExchangeException("Missing ServiceName header", exchange)
         //}
-        Map parameters = exchange.getIn().getBody(Map.class)
+        
+        Map parameters = exchange.getMessage().getBody(Map.class)
 
         // logger.warn("TOREMOVE: remaining=[${remaining}], serviceName=${serviceName}, parameters: ${parameters}")
 
@@ -50,6 +52,6 @@ class MoquiServiceProducer extends DefaultProducer {
                 .parameters(parameters).call()
         logger.info("Service [${serviceName}] result [${result}]")
 
-        exchange.getOut().setBody(result)
+        exchange.getMessage().setBody(result)
     }
 }

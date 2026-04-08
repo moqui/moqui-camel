@@ -14,19 +14,22 @@
 package org.moqui.impl.service.camel
 
 import org.apache.camel.Endpoint
+import org.apache.camel.spi.annotations.Component
 import org.apache.camel.support.DefaultComponent
 
+@Component("moquiservice")
 class MoquiServiceComponent extends DefaultComponent {
 
-    protected CamelToolFactory camelToolFactory
+    private final CamelToolFactory camelToolFactory
 
     MoquiServiceComponent(CamelToolFactory ctf) {
-        super()
-        camelToolFactory = ctf
+        this.camelToolFactory = ctf
     }
 
+    @Override
     protected Endpoint createEndpoint(String uri, String remaining, Map<String, Object> parameters) throws Exception {
         MoquiServiceEndpoint endpoint = new MoquiServiceEndpoint(uri, this, remaining)
+        setProperties(endpoint, parameters)
         return endpoint
     }
 

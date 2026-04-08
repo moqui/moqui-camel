@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<routes xmlns="http://camel.apache.org/schema/xml-io">
+    <!--
+        Codesys txt recipe export route.
+        Triggered by a Moqui service call with deviceRuleSetId + deviceId.
+
+        Flow:
+          SQL (DeviceRuleSet → DeviceRule → DeviceConfig → Parameter + ParameterDef)
+          → Groovy transform: List<Map> → "parameterName:=parameterValue\n" lines
+          → direct:moquiFileTransfer (generic file-transfer route below)
+
+        Override recipe.sql.query, recipe.filename and file.transfer.uri in
+        runtime/conf/camel*.properties for production use.
+    -->
+    <route id="moqui-recipe-export">
+        <from uri="direct:moquiRecipeExport"/>
+        <toD uri="sql:{{recipe.sql.query}}?dataSource=#{{camel.sql.datasource}}"/>
+        <setProperty name="recipeRowCount">
+            <simple>${body.size()}</simple>
+        </setProperty>
+        <transform>
+            <groovy>body.collect { "${it['parameterName']}:=${it['parameterValue']}" }.join('\n')</groovy>
+        </transform>
+        <setHeader name="CamelFileName">
+            <simple>{{recipe.filename}}</simple>
+        </setHeader>
+        <to uri="direct:moquiFileTransfer"/>
+        <setBody>
+            <simple>{"status":"completed","routeId":"${exchange.fromRouteId}","rowCount":${exchangeProperty.recipeRowCount}}</simple>
+        </setBody>
+        <unmarshal>
+            <json library="Jackson"/>
+        </unmarshal>
+    </route>
+
+    <!--
+        Generic file-transfer route.
+        Writes the message body (String or bytes) to the configured endpoint(s).
+        The CamelFileName header (set by the caller) controls the remote/local file name.
+
+        Primary:   file.transfer.uri   — always used
+        Secondary: file.transfer.uri.2 — used only when file.transfer.uri.2.enabled=true
+                   Enables redundant delivery to a second PLC (SFTP, file, SEDA).
+
+        Production examples:
+          file.transfer.uri=sftp:user@plc1.host:22/recipes
+          file.transfer.uri.2.enabled=true
+          file.transfer.uri.2=sftp:user@plc2.host:22/recipes
+        Local/test:
+          file.transfer.uri=file:target/camel-recipe-output
+        Test (SEDA):
+          file.transfer.uri=seda:moquiRecipeOutput
+
+        Can be reused for any content type: G-code files, DeviceContent blobs, etc.
+    -->
+    <route id="moqui-file-transfer">
+        <from uri="direct:moquiFileTransfer"/>
+        <toD uri="{{file.transfer.uri}}" pattern="InOnly"/>
+        <choice>
+            <when>
+                <simple>${properties:file.transfer.uri.2.enabled:false}</simple>
+                <toD uri="{{file.transfer.uri.2}}" pattern="InOnly"/>
+            </when>
+        </choice>
+    </route>
+</routes>
