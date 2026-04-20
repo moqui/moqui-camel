@@ -34,27 +34,29 @@ dependencies {
     testImplementation project(':framework').configurations.testImplementation.allDependencies
 
     // Apache Camel
-    // NOTE: there is a classloading issue with Camel 2.24.0 with the default Caffeine cache so not updating for now
-    // "Caused by: java.lang.ClassNotFoundException: Class org.apache.camel.com.github.benmanes.caffeine.cache.SSLMS not found."
-    // NOTE: updating to Camel 3 will require various code changes...
     implementation 'org.apache.camel:camel-core:4.16.0' // Apache 2.0
     runtimeOnly 'org.apache.camel:camel-csv:4.16.0' // Apache 2.0
     runtimeOnly 'org.apache.camel:camel-freemarker:4.16.0' // Apache 2.0
-    // module for camel-groovy because depends on groovy-all and moqui-framework now using selected groovy modules
+    // camel-groovy: exclude transitive deps to avoid pulling groovy-all (Moqui uses selected groovy modules).
+    // camel-attachments must be declared explicitly because transitive=false drops it, but GroovyLanguage requires it.
     runtimeOnly('org.apache.camel:camel-groovy:4.16.0') {
         transitive = false
     } // Apache 2.0
+    runtimeOnly 'org.apache.camel:camel-attachments:4.16.0' // Apache 2.0 — required by GroovyLanguage at runtime
+    runtimeOnly 'org.apache.camel:camel-jms:4.16.0' 
+    runtimeOnly 'org.apache.activemq:artemis-jakarta-client:2.38.0' 
+    runtimeOnly 'org.apache.camel:camel-jackson:4.16.0' // Apache 2.0
+    runtimeOnly 'org.apache.camel:camel-paho:4.16.0' // Apache 2.0
+    runtimeOnly 'org.apache.camel:camel-paho-mqtt5:4.16.0' // Apache 2.0
+    runtimeOnly 'org.apache.camel:camel-sql:4.16.0' // Apache 2.0
+    runtimeOnly 'org.apache.camel:camel-xml-io-dsl:4.16.0' // Apache 2.0
+    
     /* Uncomment these as desired for use in Camel:
-    runtimeOnly ('org.apache.camel:camel-http-common:2.22.5') { exclude group: 'org.apache.geronimo.specs' } // Apache 2.0
-    runtimeOnly 'org.apache.camel:camel-http4:2.22.5' // Apache 2.0
-    runtimeOnly 'org.apache.camel:camel-jms:2.22.5' // Apache 2.0
-    runtimeOnly 'org.apache.camel:camel-lucene:2.22.5' // Apache 2.0
-    runtimeOnly 'org.apache.camel:camel-lucene:2.22.5' // Apache 2.0
-    runtimeOnly 'org.apache.camel:camel-mail:2.22.5' // Apache 2.0
-    runtimeOnly 'org.apache.camel:camel-mqtt:2.22.5' // Apache 2.0
-    runtimeOnly 'org.apache.camel:camel-quartz2:2.22.5' // Apache 2.0
-    runtimeOnly 'org.apache.camel:camel-shiro:2.22.5' // Apache 2.0
-    runtimeOnly 'org.apache.camel:camel-xmlrpc:2.22.5' // Apache 2.0
+    runtimeOnly ('org.apache.camel:camel-http-common:4.16.0') { exclude group: 'org.apache.geronimo.specs' } 
+    runtimeOnly 'org.apache.camel:camel-http:4.16.0'
+    runtimeOnly 'org.apache.camel:camel-lucene:4.16.0' 
+    runtimeOnly 'org.apache.camel:camel-mail:4.16.0' 
+    runtimeOnly 'org.apache.camel:camel-quartz:4.16.0'
     */
 }
 
@@ -79,6 +81,7 @@ tasks.register('copyDependencies', Copy) {
 jar.dependsOn copyDependencies
 
 test {
+    dependsOn jar
     dependsOn cleanTest
     useJUnitPlatform()
 

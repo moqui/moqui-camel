@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+This software is in the public domain under CC0 1.0 Universal plus a
+Grant of Patent License.
+
+To the extent possible under law, the author(s) have dedicated all
+copyright and related and neighboring rights to this software to the
+public domain worldwide. This software is distributed without any
+warranty.
+
+You should have received a copy of the CC0 Public Domain Dedication
+along with this software (see the LICENSE.md file). If not, see
+<http://creativecommons.org/publicdomain/zero/1.0/>.
+-->
+<services xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://moqui.org/xsd/service-definition-3.xsd">
+    <service verb="triggerOutboundData" type="camel" location="direct:moquiOutboundData">
+        <description>Trigger the Camel outbound data route.
+            Executes the configured SQL query (typically a DeviceRequest read: DeviceRequestItem JOIN Parameter)
+            and publishes each result row as JSON to the configured broker endpoint (MQTT v5, JMS, AMQP, etc.).</description>
+        <in-parameters>
+            <parameter name="requestName" required="true">
+                <description>Name of the DeviceRequest whose items are read and published.</description>
+            </parameter>
+        </in-parameters>
+        <out-parameters>
+            <parameter name="status"/>
+            <parameter name="routeId"/>
+            <parameter name="publishUri"/>
+        </out-parameters>
+    </service>
+
+    <service verb="exportRecipe" type="camel" location="direct:moquiRecipeExport">
+        <description>Export a Codesys TXT recipe file for the given DeviceRuleSet and Device.
+            Queries DeviceRuleSet → DeviceRule → DeviceConfig → Parameter + ParameterDef,
+            formats each row as "parameterName:=parameterValue" and transfers the file via
+            the configured file.transfer.uri (SFTP, local file, or SEDA for tests).</description>
+        <in-parameters>
+            <parameter name="deviceRuleSetId" required="true">
+                <description>ID of the DeviceRuleSet to export.</description>
+            </parameter>
+            <parameter name="deviceId" required="true">
+                <description>ID of the Device for which the recipe is generated (filters DeviceRule.deviceId).</description>
+            </parameter>
+        </in-parameters>
+        <out-parameters>
+            <parameter name="status"/>
+            <parameter name="routeId"/>
+            <parameter name="rowCount" type="Integer"/>
+        </out-parameters>
+    </service>
+
+    <service verb="defaultInboundCallback">
+        <description>Default Moqui callback invoked after the inbound data route stores a received message to the DB.</description>
+        <in-parameters>
+            <parameter name="parameterId"/>
+            <parameter name="numericValue"/>
+            <parameter name="symbolicValue"/>
+            <parameter name="parameterLogId"/>
+        </in-parameters>
+        <actions>
+            <log level="info" message="moqui-camel inbound callback parameterId=[${parameterId}] numericValue=[${numericValue}]"/>
+        </actions>
+    </service>
+</services>

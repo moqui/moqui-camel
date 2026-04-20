@@ -27,7 +27,6 @@ class MoquiServiceConsumer extends DefaultConsumer {
     protected final MoquiServiceEndpoint moquiServiceEndpoint
     protected final String remaining
 
-
     MoquiServiceConsumer(MoquiServiceEndpoint moquiServiceEndpoint, Processor processor, String remaining) {
         super(moquiServiceEndpoint, processor)
         this.moquiServiceEndpoint = moquiServiceEndpoint
@@ -40,8 +39,7 @@ class MoquiServiceConsumer extends DefaultConsumer {
         try {
             Exchange exchange = getEndpoint().createExchange()
 
-            // populate exchange.in
-            exchange.in.setBody(parameters)
+            exchange.getMessage().setBody(parameters)
 
             try {
                 getProcessor().process(exchange)
@@ -49,11 +47,15 @@ class MoquiServiceConsumer extends DefaultConsumer {
                 exchange.setException(e)
             }
 
-            // get response (exchange.out)
-            Map<String, Object> result = exchange.out.getBody(Map.class)
+            // get response
+            if (exchange.getException() != null) {
+                 throw exchange.getException()
+            }
+            
+            Map<String, Object> result = exchange.getMessage().getBody(Map.class)
             return result
         } catch (Exception e) {
-            throw new RuntimeCamelException("Cannot process request", e);
+            throw new RuntimeCamelException("Cannot process request", e)
         }
     }
 }

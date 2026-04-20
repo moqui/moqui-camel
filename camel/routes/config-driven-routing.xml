@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<routes xmlns="http://camel.apache.org/schema/xml-io">
+    <!--
+        Outbound event source: triggered by a Moqui REST call or service invocation.
+        Executes a configurable SQL query on the default Moqui DataSource, serialises
+        each result row as JSON and publishes to any broker endpoint
+        (MQTT v5 via paho-mqtt5, JMS, AMQP, SEDA, etc.).
+        SQL and all endpoints are fully configurable via properties.
+    -->
+    <route id="moqui-outbound-data">
+        <from uri="direct:moquiOutboundData"/>
+        <toD uri="sql:{{outbound.sql.query}}?dataSource=#{{camel.sql.datasource}}"/>
+        <split>
+            <simple>${body}</simple>
+            <marshal>
+                <json library="Jackson"/>
+            </marshal>
+            <toD uri="{{outbound.publish.uri}}" pattern="InOnly"/>
+            <choice>
+                <when>
+                    <simple>{{outbound.afterPublish.enabled}}</simple>
+                    <unmarshal>
+                        <json library="Jackson"/>
+                    </unmarshal>
+                    <toD uri="{{outbound.afterPublish.uri}}" pattern="InOnly"/>
+                </when>
+            </choice>
+        </split>
+        <setBody>
+            <simple>{"status":"completed","routeId":"${exchange.fromRouteId}","publishUri":"{{outbound.publish.uri}}"}</simple>
+        </setBody>
+        <unmarshal>
+            <json library="Jackson"/>
+        </unmarshal>
+    </route>
+
+    <!--
+        Inbound event sink: consumes JSON messages from any broker endpoint
+        (MQTT v5 via paho-mqtt5, JMS, AMQP, SEDA, etc.), extracts named fields and
+        executes a configurable SQL statement (INSERT / UPDATE / MERGE) on the
+        default Moqui DataSource.
+        The original JSON is preserved in the exchange and forwarded to an optional
+        Moqui service callback after the DB step.
+    -->
+    <route id="moqui-inbound-data" autoStartup="{{inbound.route.autoStartup}}">
+        <from uri="{{inbound.consume.uri}}"/>
+        <convertBodyTo type="java.lang.String"/>
+        <setProperty name="camelInboundJson">
+            <simple>${body}</simple>
+        </setProperty>
+        <unmarshal>
+            <json library="Jackson"/>
+        </unmarshal>
+        <transform>
+            <groovy>def m = new java.util.LinkedHashMap(body); if (!m.get('parameterLogId')) m['parameterLogId'] = UUID.randomUUID().toString().replace('-',''); m</groovy>
+        </transform>
+        <toD uri="{{inbound.sql.uri}}"/>
+        <choice>
+            <when>
+                <simple>{{inbound.afterDb.enabled}}</simple>
+                <toD uri="{{inbound.afterDb.uri}}" pattern="InOnly"/>
+            </when>
+        </choice>
+    </route>
+</routes>
