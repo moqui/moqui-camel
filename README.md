@@ -15,4 +15,4 @@ The Apache Camel and dependent JAR files are added to the lib directory when the
 designed to be done from the Moqui build (ie from the moqui root directory) along with all other component builds. 
 
 To use just install this component. The configuration for the ToolFactory and ServiceRunner is already in place in the 
-MoquiConf.xml included in this component and will be merged with the main configuration at runtime. 
+MoquiConf.xml included in this component and will be merged with the main configuration at runtime.

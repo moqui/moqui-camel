@@ -14,19 +14,25 @@
 package org.moqui.impl.service.camel
 
 import org.apache.camel.Endpoint
+import org.apache.camel.spi.annotations.Component
 import org.apache.camel.support.DefaultComponent
 
+@Component("moquiservice")
 class MoquiServiceComponent extends DefaultComponent {
 
-    protected CamelToolFactory camelToolFactory
+    protected final CamelToolFactory camelToolFactory
 
     MoquiServiceComponent(CamelToolFactory ctf) {
         super()
-        camelToolFactory = ctf
+        if (ctf == null) throw new IllegalArgumentException("CamelToolFactory cannot be null")
+        this.camelToolFactory = ctf
     }
 
+    @Override
     protected Endpoint createEndpoint(String uri, String remaining, Map<String, Object> parameters) throws Exception {
+        if (!remaining) throw new IllegalArgumentException("Service name is required for moquiservice endpoint URI [${uri}]")
         MoquiServiceEndpoint endpoint = new MoquiServiceEndpoint(uri, this, remaining)
+        setProperties(endpoint, parameters)
         return endpoint
     }
 
