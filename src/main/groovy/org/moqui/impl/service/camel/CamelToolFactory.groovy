@@ -13,9 +13,11 @@
  */
 package org.moqui.impl.service.camel
 
+import java.util.concurrent.ConcurrentHashMap
 import groovy.transform.CompileStatic
 import org.apache.camel.CamelContext
 import org.apache.camel.impl.DefaultCamelContext
+import org.apache.camel.support.SimpleRegistry
 import org.moqui.context.ExecutionContextFactory
 import org.moqui.context.ToolFactory
 import org.slf4j.Logger
@@ -31,26 +33,34 @@ class CamelToolFactory implements ToolFactory<CamelContext> {
     protected ExecutionContextFactory ecf = null
     /** The central object of the Camel API: CamelContext */
     protected CamelContext camelContext
+    protected SimpleRegistry camelRegistry
     protected MoquiServiceComponent moquiServiceComponent
-    protected Map<String, MoquiServiceConsumer> camelConsumerByUriMap = new HashMap<String, MoquiServiceConsumer>()
+    protected Map<String, MoquiServiceConsumer> camelConsumerByUriMap = new ConcurrentHashMap<>()
 
     /** Default empty constructor */
     CamelToolFactory() { }
 
     @Override
     String getName() { return TOOL_NAME }
+
     @Override
     void init(ExecutionContextFactory ecf) {
         logger.info("Starting Camel")
+        if (this.ecf == null) this.ecf = ecf
+        if (camelRegistry == null) camelRegistry = new SimpleRegistry()
+        if (camelContext == null) camelContext = new DefaultCamelContext(camelRegistry)
+        configureCamelRegistry()
         moquiServiceComponent = new MoquiServiceComponent(this)
         camelContext.addComponent("moquiservice", moquiServiceComponent)
         camelContext.start()
     }
+    
     @Override
     void preFacadeInit(ExecutionContextFactory ecf) {
         this.ecf = ecf
         // setup the CamelContext, but don't init moquiservice Camel Component yet
-        camelContext = new DefaultCamelContext()
+        camelRegistry = new SimpleRegistry()
+        camelContext = new DefaultCamelContext(camelRegistry)
     }
 
     @Override
@@ -69,4 +79,9 @@ class CamelToolFactory implements ToolFactory<CamelContext> {
     MoquiServiceComponent getMoquiServiceComponent() { return moquiServiceComponent }
     void registerCamelConsumer(String uri, MoquiServiceConsumer consumer) { camelConsumerByUriMap.put(uri, consumer) }
     MoquiServiceConsumer getCamelConsumer(String uri) { return camelConsumerByUriMap.get(uri) }
+
+    protected void configureCamelRegistry() {
+        camelRegistry.bind("moquiExecutionContextFactory", ExecutionContextFactory.class, ecf)
+        camelRegistry.bind("camelToolFactory", CamelToolFactory.class, this)
+    }
 }
